@@ -4,7 +4,7 @@ testbench
 .vscode
 build/
 CMakeFiles/
-dataset*
+*data*
 test*
 run.bat
 small*

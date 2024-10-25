@@ -304,7 +304,7 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
             int valueLeng = keyHuff.getLookupTable(vect[j].key+1).getLen();
             if( vect[j].dimension[0] == 0 ) { // 如果是数组，则采用 length-value 的存储方式
                 int p = j;
-                while( p < vect.size() - 1 && vect[p+1].dimension[0] != -1 ) // 到数组的末尾
+                while( p < vect.size() - 1 && vect[p+1].key == vect[p].key ) // 到数组的末尾
                     ++p;
                 outFile.append(3, vect[p].dimension[0]); // 输出第一维数组的长度
                 if( vect[j].dimension[1] == 0 ) { // 二维数组
@@ -312,6 +312,7 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
                         int l = k;
                         while( l < vect.size() - 1 && vect[l+1].dimension[0] == vect[l].dimension[0] ) 
                             ++l;
+                        outFile.append(3, vect[l].dimension[1]);
                         for(int o = k; o <= l; ++o) {
                             if( huffFlag ) {
                                 outFile.append(valueHuff.getEncodeTableLength(JSON_Value(vect[o].value)), valueHuff.getEncodeTable(JSON_Value(vect[o].value)));
@@ -336,7 +337,13 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
                     outFile.append(valueHuff.getEncodeTableLength(JSON_Value(vect[j].value)), valueHuff.getEncodeTable(JSON_Value(vect[j].value)));
                 } else {
                     // printf("value Len:%d\n", valueLeng);
-                    // printf("value: %d\n", )
+                    printf("len: %d, value: %d\n", valueLeng, vect[j].value);
+                    long long val = vect[j].value;
+                    if( val < 0 ) {
+                        val = -val;
+                        val ^= (1<<valueLeng) - 1;
+                        val += 1;
+                    }
                     outFile.append(valueLeng, vect[j].value);
                 }
             }

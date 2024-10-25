@@ -298,7 +298,8 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
-    ifstream file("smallData.txt");
+    // ifstream file("smallData.txt");
+    ifstream file("dataset.txt");
 
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
@@ -368,13 +369,14 @@ int main(){
         // puts("E");
         // printf("-------------\n");
         // outFile.flushInto("dataTruth.txt");
-        outFile.flushInto("smallCompressed");
+        // outFile.flushInto("smallCompressed");
+        outFile.flushInto("dataout.txt");
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
             // printf(" %d %d %lld %lld\n",Is_array[i],Count_times[i],Max_value[i],Min_value[i]);
         }
-
+        break;
         if(file_num!=EPOCH) break;
     }
     
