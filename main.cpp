@@ -43,6 +43,7 @@ char get_char(int id){
 struct Trie{
     struct node{
         int fail,to[129];
+        int fail,to[129];
     }tr[N];
     int tot,in[N],last_position,match[N];
     void clear(){
@@ -259,6 +260,8 @@ void Read_data(int json_id){
                 T.match[T.last_position]=string_list.size()-1;
                 Max_value[string_list.size()-1]=MIN_VALUE;
                 Min_value[string_list.size()-1]=MAX_VALUE;
+                Max_value[string_list.size()-1]=MIN_VALUE;
+                Min_value[string_list.size()-1]=MAX_VALUE;
             }
             int keyid=T.match[T.last_position];
             JSON_my::data tmp;
@@ -294,7 +297,7 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
-    ifstream file("dataset.txt");
+    ifstream file("dataset0012.txt");
 
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
