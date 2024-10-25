@@ -274,7 +274,9 @@ void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const
 void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], int n, const bool inHuffman[]){
     for(int i = 0; i < n; ++i) {
         if( inHuffman[i] ) {
-            for(auto [key, value]: set[i]) {
+            for(auto iter: set[i]) {
+				auto key = iter.first;
+				auto value = iter.second;
                 valueHuff.insert(JSON_Value(key), value);
             }
         }

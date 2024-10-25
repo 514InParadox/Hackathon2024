@@ -365,7 +365,7 @@ int main(){
         // puts("E");
         // printf("-------------\n");
         // outFile.flushInto("dataTruth.txt");
-        outFile.flushInto("data.txt");
+        outFile.flushInto("dataset.txt_0.txt");
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
