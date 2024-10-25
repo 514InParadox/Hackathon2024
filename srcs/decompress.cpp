@@ -137,7 +137,8 @@ int main(int argc, const char **argv)
 				std::function<void (std::uint64_t)> print_value;
 				if (k.sgn)
 					print_value = [&](std::uint64_t x) {
-						out_fs << (x >> k.n - 1 & 1 ? static_cast<std::int64_t>(~0ll << k.n | x) : x);
+						std::cerr << "HERE\n";
+						out_fs << static_cast<std::int64_t>(x >> k.n - 1 & 1 ? ~0ll << k.n | x : x);
 					};
 				else
 					print_value = [&](std::uint64_t x) {
