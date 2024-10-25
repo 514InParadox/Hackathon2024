@@ -344,9 +344,9 @@ int main(){
         for (int i = 0; i < string_list.size(); ++i)
         {
             if (Max_value[i] < 0)
-                width[i] = bit_width(-(Min_value[i] + 1));
+                width[i] = bit_width(-(Min_value[i] + 1)) + 1;
             else if (Min_value[i] < 0)
-                width[i] = std::max(bit_width(-(Min_value[i] + 1)), bit_width(Max_value[i]));
+                width[i] = std::max(bit_width(-(Min_value[i] + 1)), bit_width(Max_value[i])) + 1;
             else
                 width[i] = bit_width(Max_value[i]);
             // printf("%d\n", Min_value[i]);
@@ -369,8 +369,7 @@ int main(){
         // puts("E");
         // printf("-------------\n");
         // outFile.flushInto("dataTruth.txt");
-        // outFile.flushInto("smallCompressed");
-        outFile.flushInto("dataout.txt");
+        outFile.flushInto("dataset.txt_0");
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
