@@ -73,18 +73,21 @@ public:
             outFile.append(8, val);
         } else if( val < 1 << 16 ) {
             outFile.append(2, 1);
-            outFile.append(8, val >> 8);
-            outFile.append(8, val & (0b11111111));
+            outFile.append(16, val);
+            // outFile.append(8, val >> 8);
+            // outFile.append(8, val & (0b11111111));
         }
         else if( val < 1ll << 32 ) {
             outFile.append(2, 2);
-            for(int i = 3; i >= 0; i--)
-                outFile.append(8, (val >> (8 * i)) & (0b11111111));
+            outFile.append(32, val);
+            // for(int i = 3; i >= 0; i--)
+            //     outFile.append(8, (val >> (8 * i)) & (0b11111111));
         }
         else {
             outFile.append(2, 3);
-            for(int i = 7; i >= 0; i--)
-                outFile.append(8, (val >> (8 * i)) & (0b11111111));
+            outFile.append(64, val);
+            // for(int i = 7; i >= 0; i--)
+            //     outFile.append(8, (val >> (8 * i)) & (0b11111111));
         }
     }
     struct JSON_Value_Hasher {
@@ -143,7 +146,7 @@ private:
     void encodeDfs(Node *p, int depth = 0) {
         if( p->lson == nullptr ) { // 叶子节点
             encodeTable[p->idx] = now;
-            encodeTableLength[p->idx] = depth+1;
+            encodeTableLength[p->idx] = depth;
         } else { //
             now[depth] = 0;
             encodeDfs(p->lson, depth+1);
@@ -238,6 +241,7 @@ public:
         // 此处作用是将 huffman 树存到比特流里，实际使用时还是要在原哈夫曼树上跑。
         // 可以直接判断哈夫曼树的结尾，所以不需要分隔符。
         // printf("%d\n", 2 * key_tot - 1);
+        outFile.append(1, key_tot != 0);
         if( key_tot == 0 ) return;
         huffmanEncode(forest[2*key_tot-1]);      
     }
@@ -257,48 +261,58 @@ void compressOutputSpecialChar(const std::vector<std::string> &compress_string) 
     outFile.append(7, 0);
 }
 
-void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const int Is_array[], const int Count_times[], const int length[], const bool ifSign[], const bool inHuffman[] ) {
+void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const int Is_array[], const int Count_times[], const int length[], const bool ifSign[], const bool inHuffman[] , const int file_num ) {
     for(int i = 0; i < string_list.size(); ++i) {
+        // printf("Test data:");
+        // std::cout << string_list[i] << ' ';
+        // printf("%d\n", ifSign[i]);
         keyHuff.insert(JSON_Key(string_list[i], length[i], ifSign[i], inHuffman[i]), Count_times[i]);
     }
-    keyHuff.insert(JSON_Key("", 0, 0, 0), 1); // 插入结束字符
+    keyHuff.insert(JSON_Key("", 0, 0, 0), file_num); // 插入结束字符
 
     keyHuff.createHuffmanTree();
     keyHuff.outputHuffman();
 }
 
-void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], int n){
-    for(int i = 1; i <= n; ++i) {
-        for(auto [key, value]: set[i]) {
-            valueHuff.insert(JSON_Value(key), value);
+void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], int n, const bool inHuffman[]){
+    for(int i = 0; i < n; ++i) {
+        if( inHuffman[i] ) {
+            for(auto iter: set[i]) {
+				auto key = iter.first;
+				auto value = iter.second;
+                valueHuff.insert(JSON_Value(key), value);
+            }
         }
     }
     valueHuff.createHuffmanTree();
-    puts("F");
+    // puts("F");
     valueHuff.outputHuffman();
 }
 
 void compressOutputJSON(struct JSON_my json[], int file_num) {
-    for(int i = 1; i <= file_num; i++) {
+    int divLength = keyHuff.getEncodeTableLength(JSON_Key("", 0, 0, 0));
+    std::bitset<128> divStream = keyHuff.getEncodeTable(JSON_Key("", 0, 0, 0));
+    for(int i = 0; i < file_num; i++) {
         // outFile.outputLen();
         auto vect = json[i].vec;
         sort(vect.begin(), vect.end());
         for(int j = 0; j < vect.size(); ++j) {
             // 输出 key
-            outFile.append(keyHuff.getEncodeTableLength(vect[j].key), keyHuff.getEncodeTable(vect[j].key));
+            outFile.append(keyHuff.getEncodeTableLength(vect[j].key+1), keyHuff.getEncodeTable(vect[j].key+1));
             // 输出 value
-            bool huffFlag = keyHuff.getLookupTable(vect[j].key).inHuff();
-            int valueLeng = keyHuff.getLookupTable(vect[j].key).getLen();
+            bool huffFlag = keyHuff.getLookupTable(vect[j].key+1).inHuff();
+            int valueLeng = keyHuff.getLookupTable(vect[j].key+1).getLen();
             if( vect[j].dimension[0] == 0 ) { // 如果是数组，则采用 length-value 的存储方式
                 int p = j;
-                while( p < vect.size() - 1 && vect[p+1].dimension[0] != -1 ) // 到数组的末尾
+                while( p < vect.size() - 1 && vect[p+1].key == vect[p].key ) // 到数组的末尾
                     ++p;
                 outFile.append(3, vect[p].dimension[0]); // 输出第一维数组的长度
                 if( vect[j].dimension[1] == 0 ) { // 二维数组
                     for(int k = j; k <= p; ++k) {
                         int l = k;
-                        while( l < vect.size() - 1 && vect[l+1].dimension[0] == vect[l].dimension[0] ) 
+                        while( l < vect.size() - 1 && vect[l+1].dimension[0] == vect[l].dimension[0] && vect[l+1].key == vect[l].key ) 
                             ++l;
+                        outFile.append(3, vect[l].dimension[1]);
                         for(int o = k; o <= l; ++o) {
                             if( huffFlag ) {
                                 outFile.append(valueHuff.getEncodeTableLength(JSON_Value(vect[o].value)), valueHuff.getEncodeTable(JSON_Value(vect[o].value)));
@@ -322,12 +336,21 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
                 if( huffFlag ) {
                     outFile.append(valueHuff.getEncodeTableLength(JSON_Value(vect[j].value)), valueHuff.getEncodeTable(JSON_Value(vect[j].value)));
                 } else {
+                    // printf("value Len:%d\n", valueLeng);
+                    // printf("len: %d, value: %d\n", valueLeng, vect[j].value);
+                    long long val = vect[j].value;
+                    if( val < 0 ) {
+                        val = -val;
+                        val ^= (1<<valueLeng) - 1;
+                        val += 1;
+                    }
                     outFile.append(valueLeng, vect[j].value);
                 }
             }
         }
-        outFile.append(7, 0); // 分隔符
+        outFile.append(divLength, divStream);
     }
+    outFile.append(divLength, divStream); // 文件结束
 }
 
 #endif

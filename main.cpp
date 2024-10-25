@@ -274,10 +274,12 @@ void Read_data(int json_id){
         else if(Line[i]==':'){
             long long tmp_val=0;
             bool flag=1;
-            i+=2;
+            while(!(Line[i]>='0' && Line[i]<='9')) {
+                if( Line[i] == '-' ) flag = 0;
+                i++;
+            }
             for(;i<len;i++){
                 if(Line[i]==',' || Line[i]=='}') break;
-                if(Line[i]=='-') flag=0;
                 else tmp_val=tmp_val*10+(Line[i]^48);
             }
             tmp_val*=(flag)?1:-1;
@@ -290,13 +292,16 @@ void Read_data(int json_id){
         }
     }
 }
-#define EPOCH 500
+#define EPOCH 1000
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
+    // ifstream file("smallData.txt");
     ifstream file("dataset.txt");
+
+    int flush_file_count = 0;
 
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
@@ -315,20 +320,21 @@ int main(){
         }
         string_list.clear();compress_string.clear();
         T.clear();
-        while (file_num < EPOCH && getline(file, Line)) {
+        while (file_num < EPOCH && getline(file, Line) && !Line.empty() && Line[0] == '{') {
             Read_data(file_num);
             file_num++;
             // for(auto x:json[file_num-1].vec){
             //     printf("%d %d %d %lld\n",x.key,x.dimension[0],x.dimension[1],x.value);
             // }
         }
+        if (!file_num) break;
         
         
         // for(int i=0;i<string_list.size();i++){
         //     for(auto x:string_list[i]) printf("%c",get_char(x));
         //     printf(" %d %d\n",Is_array[i],Count_times[i]);
         // }
-        for(int i=1;i<=1;i++){
+        for(int i=1;i<=43;i++){
             Compress(i);
         }
         auto bit_width = [](LL x) {
@@ -340,39 +346,43 @@ int main(){
         for (int i = 0; i < string_list.size(); ++i)
         {
             if (Max_value[i] < 0)
-                width[i] = bit_width(-(Min_value[i] + 1));
+                width[i] = bit_width(-(Min_value[i] + 1)) + 1;
             else if (Min_value[i] < 0)
-                width[i] = std::max(bit_width(-(Min_value[i] + 1)),bit_width(Max_value[i]));
+                width[i] = std::max(bit_width(-(Min_value[i] + 1)), bit_width(Max_value[i])) + 1;
             else
                 width[i] = bit_width(Max_value[i]);
+            // printf("%d\n", Min_value[i]);
             sgn[i] = Min_value[i] < 0;
             int size = set[i].size();
             huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
+            // huff[i] = false;
         }
         keyHuff.reset();
         valueHuff.reset();
         // puts("A");
         compressOutputSpecialChar(compress_string);
         // puts("B");
-        compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff);
+        compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff, file_num);
         // puts("C");
-        compressOutputValueHuffman(set, string_list.size());
+        compressOutputValueHuffman(set, string_list.size(), huff);
         // puts("D");
         compressOutputJSON(json, file_num);
+        // outFile.flushFake("dataFake.txt");
         // puts("E");
-        printf("-------------\n");
-        outFile.flushInto("data");
+        // printf("-------------\n");
+        // outFile.flushInto("dataTruth.txt");
+        outFile.flushInto("dataset.txt_" + std::to_string(flush_file_count++));
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
             // printf(" %d %d %lld %lld\n",Is_array[i],Count_times[i],Max_value[i],Min_value[i]);
         }
-
+        // break;
         if(file_num!=EPOCH) break;
     }
     
-    printf("接受\n");
-    printf("压缩效益：%d\n",compress_value);
+    printf("ac\n");
+    printf("pro:%d\n",compress_value);
     printf("Time: %lf\n",(double)(clock()-start)/CLOCKS_PER_SEC);
     return 0;
 }

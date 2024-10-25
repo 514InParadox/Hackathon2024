@@ -49,19 +49,19 @@ int main(int argc, const char **argv)
 				rep[idx] += rep[c];
 				c = bs.extract(7);
 			}
-			while (!c);
+			while (c);
 			++idx;
 		}
 	}
 	{
-		std::function<void (int &)> DFS = [&](int &u) {
-			u = key_ch.size();
+		std::function<int ()> DFS = [&]() {
+			int u = key_ch.size();
 			key.emplace_back();
 			if (bs.extract(1))
 			{
 				key_ch.emplace_back();
-				DFS(key_ch.back().l);
-				DFS(key_ch.back().r);
+				int l = DFS(), r = DFS();
+				key_ch[u] = {l, r};
 			}
 			else
 			{
@@ -77,37 +77,39 @@ int main(int argc, const char **argv)
 				k.sgn = bs.extract(1);
 				k.huff = bs.extract(1);
 			}
+			return u;
 		};
-		int root; DFS(root);
+		if (bs.extract(1)) DFS();
 	}
 	{
-		std::function<void (int &)> DFS = [&](int &u) {
-			u = val_ch.size();
+		std::function<int ()> DFS = [&]() {
+			int u = val_ch.size();
 			if (bs.extract(1))
 			{
 				val_ch.emplace_back();
 				val.emplace_back();
-				DFS(val_ch.back().l);
-				DFS(val_ch.back().r);
+				int l = DFS(), r = DFS();
+				val_ch[u] = {l, r};
 			}
 			else
 			{
 				val_ch.emplace_back(0, 0);
 				val.push_back(bs.extract(8 << bs.extract(2)));
 			}
+			return u;
 		};
-		int root; DFS(root);
+		if (bs.extract(1)) DFS();
 	}
 	{
 		auto infer_dim_cnt = [](const std::string &s) {
 			int cnt = 0;
-			for (std::size_t i = 0; i + 1 < s.size(); ++i)
+			for (std::size_t i = 0; i < s.size(); ++i)
 				if (s[i] == '_' && (s[i + 1] == '_' || i + 1 == s.size()))
 					++cnt;
 			return cnt;
 		};
 		auto insert_dim_print = [&](const std::string &s, int *dim) {
-			for (std::size_t i = 0; i + 1 < s.size(); ++i)
+			for (std::size_t i = 0; i < s.size(); ++i)
 			{
 				out_fs << s[i];
 				if (s[i] == '_' && (s[i + 1] == '_' || i + 1 == s.size()))
@@ -131,11 +133,13 @@ int main(int argc, const char **argv)
 						return 0;
 					else
 						break;
+				std::cerr << k.s << std::endl;
 				int dim_cnt = infer_dim_cnt(k.s);
 				std::function<void (std::uint64_t)> print_value;
 				if (k.sgn)
 					print_value = [&](std::uint64_t x) {
-						out_fs << (x >> k.n - 1 & 1 ? static_cast<std::int64_t>(~0ll << k.n | x) : x);
+						std::cerr << k.s << " " << (x >> k.n - 1 & 1) << "HERE\n";
+						out_fs << static_cast<std::int64_t>(x >> k.n - 1 & 1 ? ~0ll << k.n | x : x);
 					};
 				else
 					print_value = [&](std::uint64_t x) {
@@ -172,10 +176,9 @@ int main(int argc, const char **argv)
 						print_value(parse_value());
 						return;
 					}
-					++i;
 					int ni = bs.extract(3);
 					for (int j = 0; j <= ni; ++j)
-						DFS(i);
+						dim[i] = j, DFS(i + 1);
 				};
 				DFS(0);
 			}

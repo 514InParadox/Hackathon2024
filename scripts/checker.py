@@ -26,9 +26,15 @@ with open(f'{dataset}', 'r', encoding='utf-8') as f:
 for i, f0 in enumerate(sorted(os.listdir('out'))):
     os.system(f'./{decomp} {out}/{f0} {out}/{i}.txt')
     j1 = []
-    with open(f'', 'r', encoding='utf-8') as f:
-        for line in f:
-            j1.append(json.loads(line))
+    i = 0
+    while True:
+        try:
+            with open(f'{dataset}_{i}', 'r', encoding='utf-8') as f:
+                for line in f:
+                    j1.append(json.loads(line))
+        except:
+            break
+        i += 1
 atexit.register(clean)
 if j0 != j1:
     print('Wrong output')

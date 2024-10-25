@@ -2,6 +2,9 @@
 *.exe
 testbench
 .vscode
-build
-dataset*
+build/
+CMakeFiles/
+*data*
 test*
+run.bat
+small*
