@@ -195,7 +195,8 @@ public:
     }
     void createHuffmanTree() {
         // 对于 1 ~ key_tot 的标号，需要知道其在最终树上的位置
-        static std::pair<int, int> a[MAXS+5], b[MAXS+5];
+        if( key_tot == 0 ) return;
+        static std::pair<int, int> a[MAXS+5];
         for(int i = 1; i <= key_tot; ++i) {
             forest[i] = new Node(key_cnt[i], i);
             a[i] = std::make_pair(key_cnt[i], i);
@@ -237,6 +238,7 @@ public:
         // 此处作用是将 huffman 树存到比特流里，实际使用时还是要在原哈夫曼树上跑。
         // 可以直接判断哈夫曼树的结尾，所以不需要分隔符。
         // printf("%d\n", 2 * key_tot - 1);
+        if( key_tot == 0 ) return;
         huffmanEncode(forest[2*key_tot-1]);      
     }
 };
