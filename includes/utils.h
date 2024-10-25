@@ -47,6 +47,11 @@ public:
         outfile.close();
         len = 0;
     }
+    void flushFake(const std::string &path) {
+        std::ofstream outfile(path, std::ios::out);
+        for(int j = 0; j < len; ++j)
+            outfile << buf[j];
+    }
 
 	void syncFrom(const std::string &path) {
 		std::ifstream fs(path, std::ios::binary);

@@ -73,18 +73,21 @@ public:
             outFile.append(8, val);
         } else if( val < 1 << 16 ) {
             outFile.append(2, 1);
-            outFile.append(8, val >> 8);
-            outFile.append(8, val & (0b11111111));
+            outFile.append(16, val);
+            // outFile.append(8, val >> 8);
+            // outFile.append(8, val & (0b11111111));
         }
         else if( val < 1ll << 32 ) {
             outFile.append(2, 2);
-            for(int i = 3; i >= 0; i--)
-                outFile.append(8, (val >> (8 * i)) & (0b11111111));
+            outFile.append(32, val);
+            // for(int i = 3; i >= 0; i--)
+            //     outFile.append(8, (val >> (8 * i)) & (0b11111111));
         }
         else {
             outFile.append(2, 3);
-            for(int i = 7; i >= 0; i--)
-                outFile.append(8, (val >> (8 * i)) & (0b11111111));
+            outFile.append(64, val);
+            // for(int i = 7; i >= 0; i--)
+            //     outFile.append(8, (val >> (8 * i)) & (0b11111111));
         }
     }
     struct JSON_Value_Hasher {
@@ -143,7 +146,7 @@ private:
     void encodeDfs(Node *p, int depth = 0) {
         if( p->lson == nullptr ) { // 叶子节点
             encodeTable[p->idx] = now;
-            encodeTableLength[p->idx] = depth+1;
+            encodeTableLength[p->idx] = depth;
         } else { //
             now[depth] = 0;
             encodeDfs(p->lson, depth+1);
@@ -238,6 +241,7 @@ public:
         // 此处作用是将 huffman 树存到比特流里，实际使用时还是要在原哈夫曼树上跑。
         // 可以直接判断哈夫曼树的结尾，所以不需要分隔符。
         // printf("%d\n", 2 * key_tot - 1);
+        outFile.append(1, key_tot != 0);
         if( key_tot == 0 ) return;
         huffmanEncode(forest[2*key_tot-1]);      
     }
@@ -267,28 +271,30 @@ void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const
     keyHuff.outputHuffman();
 }
 
-void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], int n){
-    for(int i = 1; i <= n; ++i) {
-        for(auto [key, value]: set[i]) {
-            valueHuff.insert(JSON_Value(key), value);
+void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], int n, const bool inHuffman[]){
+    for(int i = 0; i < n; ++i) {
+        if( inHuffman[i] ) {
+            for(auto [key, value]: set[i]) {
+                valueHuff.insert(JSON_Value(key), value);
+            }
         }
     }
     valueHuff.createHuffmanTree();
-    puts("F");
+    // puts("F");
     valueHuff.outputHuffman();
 }
 
 void compressOutputJSON(struct JSON_my json[], int file_num) {
-    for(int i = 1; i <= file_num; i++) {
+    for(int i = 0; i < file_num; i++) {
         // outFile.outputLen();
         auto vect = json[i].vec;
         sort(vect.begin(), vect.end());
         for(int j = 0; j < vect.size(); ++j) {
             // 输出 key
-            outFile.append(keyHuff.getEncodeTableLength(vect[j].key), keyHuff.getEncodeTable(vect[j].key));
+            outFile.append(keyHuff.getEncodeTableLength(vect[j].key+1), keyHuff.getEncodeTable(vect[j].key+1));
             // 输出 value
-            bool huffFlag = keyHuff.getLookupTable(vect[j].key).inHuff();
-            int valueLeng = keyHuff.getLookupTable(vect[j].key).getLen();
+            bool huffFlag = keyHuff.getLookupTable(vect[j].key+1).inHuff();
+            int valueLeng = keyHuff.getLookupTable(vect[j].key+1).getLen();
             if( vect[j].dimension[0] == 0 ) { // 如果是数组，则采用 length-value 的存储方式
                 int p = j;
                 while( p < vect.size() - 1 && vect[p+1].dimension[0] != -1 ) // 到数组的末尾
@@ -322,12 +328,15 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
                 if( huffFlag ) {
                     outFile.append(valueHuff.getEncodeTableLength(JSON_Value(vect[j].value)), valueHuff.getEncodeTable(JSON_Value(vect[j].value)));
                 } else {
+                    // printf("value Len:%d\n", valueLeng);
+                    // printf("value: %d\n", )
                     outFile.append(valueLeng, vect[j].value);
                 }
             }
         }
         outFile.append(7, 0); // 分隔符
     }
+    outFile.append(7, 0); // 文件结束
 }
 
 #endif

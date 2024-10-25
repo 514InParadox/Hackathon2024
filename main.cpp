@@ -290,7 +290,7 @@ void Read_data(int json_id){
         }
     }
 }
-#define EPOCH 500
+#define EPOCH 100
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -315,13 +315,14 @@ int main(){
         }
         string_list.clear();compress_string.clear();
         T.clear();
-        while (file_num < EPOCH && getline(file, Line)) {
+        while (file_num < EPOCH && getline(file, Line) && !Line.empty() && Line[0] == '{') {
             Read_data(file_num);
             file_num++;
             // for(auto x:json[file_num-1].vec){
             //     printf("%d %d %d %lld\n",x.key,x.dimension[0],x.dimension[1],x.value);
             // }
         }
+        if (!file_num) break;
         
         
         // for(int i=0;i<string_list.size();i++){
@@ -342,12 +343,13 @@ int main(){
             if (Max_value[i] < 0)
                 width[i] = bit_width(-(Min_value[i] + 1));
             else if (Min_value[i] < 0)
-                width[i] = std::max(bit_width(-(Min_value[i] + 1)),bit_width(Max_value[i]));
+                width[i] = std::max(bit_width(-(Min_value[i] + 1)), bit_width(Max_value[i]));
             else
                 width[i] = bit_width(Max_value[i]);
             sgn[i] = Min_value[i] < 0;
             int size = set[i].size();
-            huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
+            // huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
+            huff[i] = false;
         }
         keyHuff.reset();
         valueHuff.reset();
@@ -356,12 +358,14 @@ int main(){
         // puts("B");
         compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff);
         // puts("C");
-        compressOutputValueHuffman(set, string_list.size());
+        compressOutputValueHuffman(set, string_list.size(), huff);
         // puts("D");
         compressOutputJSON(json, file_num);
+        // outFile.flushFake("dataFake.txt");
         // puts("E");
-        printf("-------------\n");
-        outFile.flushInto("data");
+        // printf("-------------\n");
+        // outFile.flushInto("dataTruth.txt");
+        outFile.flushInto("data.txt");
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
