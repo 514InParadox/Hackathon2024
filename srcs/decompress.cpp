@@ -10,10 +10,7 @@ int main(int argc, const char **argv)
 {
 	std::ios::sync_with_stdio(false), std::cin.tie(nullptr);
 	if (!(argc == 3))
-	{
-		std::cerr << "Usage: decompress input_filename output_filename\n";
-		return 0;
-	}
+		return 1;
 	const char *in_fn = argv[1], *out_fn = argv[2];
 	Bitstream bs;
 	bs.syncFrom(in_fn);
@@ -133,12 +130,10 @@ int main(int argc, const char **argv)
 						return 0;
 					else
 						break;
-				std::cerr << k.s << std::endl;
 				int dim_cnt = infer_dim_cnt(k.s);
 				std::function<void (std::uint64_t)> print_value;
 				if (k.sgn)
 					print_value = [&](std::uint64_t x) {
-						std::cerr << k.s << " " << (x >> k.n - 1 & 1) << "HERE\n";
 						out_fs << static_cast<std::int64_t>(x >> k.n - 1 & 1 ? ~0ll << k.n | x : x);
 					};
 				else

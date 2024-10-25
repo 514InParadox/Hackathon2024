@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <string>
 #include<iostream>
 #include<vector>
 #include<cstring>
@@ -293,13 +295,16 @@ void Read_data(int json_id){
     }
 }
 #define EPOCH 1000
-int main(){
+int main(int argc, const char **argv){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    cout.tie(nullptr);
+	if (!(argc == 3))
+		return 1;
+	const char *in_fn = argv[1], *out_p = argv[2];
     clock_t start=clock();
     // ifstream file("smallData.txt");
-    ifstream file("dataset.txt");
+    ifstream file(in_fn);
+	std::system((std::string("mkdir ") + out_p).c_str());
 
     int flush_file_count = 0;
 
@@ -371,7 +376,7 @@ int main(){
         // puts("E");
         // printf("-------------\n");
         // outFile.flushInto("dataTruth.txt");
-        outFile.flushInto("dataset.txt_" + std::to_string(flush_file_count++));
+        outFile.flushInto(std::string(out_p) + "/" + in_fn + "_" + std::to_string(flush_file_count++));
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
