@@ -271,17 +271,16 @@ void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], 
             valueHuff.insert(JSON_Value(key), value);
         }
     }
-
     valueHuff.createHuffmanTree();
+    puts("F");
     valueHuff.outputHuffman();
 }
 
 void compressOutputJSON(struct JSON_my json[], int file_num) {
     for(int i = 1; i <= file_num; i++) {
-        // printf("%d ", i);
+        // outFile.outputLen();
         auto vect = json[i].vec;
         sort(vect.begin(), vect.end());
-        // if( i == 4667 ) printf("%d ", vect.size());
         for(int j = 0; j < vect.size(); ++j) {
             // 输出 key
             outFile.append(keyHuff.getEncodeTableLength(vect[j].key), keyHuff.getEncodeTable(vect[j].key));

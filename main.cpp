@@ -13,20 +13,11 @@ template<typename T>
 void upd_max(T &a,T b) { if (a < b) a = b; }
 template<typename T>
 void upd_min(T &a,T b) { if (a > b) a = b; }
-using LL = long long;
-template<typename T>
-void upd_max(T &a,T b) { if (a < b) a = b; }
-template<typename T>
-void upd_min(T &a,T b) { if (a > b) a = b; }
 const int N=1e5+5;
 #define pb push_back
 int Is_array[N];//0:not array,1:1-dimension array,2:2-dimension array
 int Count_times[N];
 long long Max_value[N],Min_value[N];
-std::unordered_map<LL, int> set[1000];
-int width[N];
-bool sgn[N];
-bool huff[N];
 std::unordered_map<LL, int> set[1000];
 int width[N];
 bool sgn[N];
@@ -51,7 +42,6 @@ char get_char(int id){
 }
 struct Trie{
     struct node{
-        int fail,to[129];
         int fail,to[129];
     }tr[N];
     int tot,in[N],last_position,match[N];
@@ -297,14 +287,10 @@ void Read_data(int json_id){
             upd_max(Max_value[key_id], tmp_val);
             upd_min(Min_value[key_id], tmp_val);
             ++set[key_id][tmp_val];
-            int key_id = json[json_id].vec.back().key;
-            upd_max(Max_value[key_id], tmp_val);
-            upd_min(Min_value[key_id], tmp_val);
-            ++set[key_id][tmp_val];
         }
     }
 }
-#define EPOCH 2000
+#define EPOCH 500
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -312,15 +298,6 @@ int main(){
     clock_t start=clock();
     ifstream file("dataset.txt");
 
-    constexpr int bound[] = {8, 16, 32, 64};
-    const int *bound_p = bound;
-    int u_b[64];
-    for (int i = 0; i < 64; ++i)
-    {
-        if (i == *bound_p)
-            ++bound_p;
-        u_b[i] = *bound_p;
-    }
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
     int u_b[64];
@@ -338,7 +315,7 @@ int main(){
         }
         string_list.clear();compress_string.clear();
         T.clear();
-        while (getline(file, Line) && file_num<EPOCH) {
+        while (file_num < EPOCH && getline(file, Line)) {
             Read_data(file_num);
             file_num++;
             // for(auto x:json[file_num-1].vec){
@@ -351,7 +328,6 @@ int main(){
         //     for(auto x:string_list[i]) printf("%c",get_char(x));
         //     printf(" %d %d\n",Is_array[i],Count_times[i]);
         // }
-        for(int i=1;i<=1;i++){
         for(int i=1;i<=1;i++){
             Compress(i);
         }
@@ -373,15 +349,17 @@ int main(){
             int size = set[i].size();
             huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
         }
-        puts("A");
+        keyHuff.reset();
+        valueHuff.reset();
+        // puts("A");
         compressOutputSpecialChar(compress_string);
-        puts("B");
+        // puts("B");
         compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff);
-        puts("C");
+        // puts("C");
         compressOutputValueHuffman(set, string_list.size());
-        puts("D");
+        // puts("D");
         compressOutputJSON(json, file_num);
-        puts("E");
+        // puts("E");
         printf("-------------\n");
         outFile.flushInto("data");
         for(int i=0;i<string_list.size();i++){
