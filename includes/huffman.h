@@ -263,6 +263,9 @@ void compressOutputSpecialChar(const std::vector<std::string> &compress_string) 
 
 void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const int Is_array[], const int Count_times[], const int length[], const bool ifSign[], const bool inHuffman[] , const int file_num ) {
     for(int i = 0; i < string_list.size(); ++i) {
+        printf("Test data:");
+        std::cout << string_list[i] << ' ';
+        printf("%d\n", ifSign[i]);
         keyHuff.insert(JSON_Key(string_list[i], length[i], ifSign[i], inHuffman[i]), Count_times[i]);
     }
     keyHuff.insert(JSON_Key("", 0, 0, 0), file_num); // 插入结束字符

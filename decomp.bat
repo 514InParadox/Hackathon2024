@@ -1,0 +1,1 @@
+.\srcs\decompress .\smallCompressed .\smallDecompress
