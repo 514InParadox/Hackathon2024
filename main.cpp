@@ -7,7 +7,9 @@
 using namespace std;
 const int N=1e5+5;
 #define pb push_back
-vector<int> val;
+int Is_array[N];//0:not array,1:1-dimension array,2:2-dimension array
+int Count_times[N];
+int xiabiao[2];
 vector<string> string_list,compress_string;
 string Line;
 int get_id(char ch){
@@ -28,13 +30,14 @@ struct Trie{
     struct node{
         int fail,to[129],ans;
     }tr[N];
-    int tot,in[N];
+    int tot,in[N],last_position,match[N];
     void clear(){
         for(int i=0;i<=tot;i++){
             memset(tr[i].to,0,sizeof(tr[i].to));
             tr[i].fail=0;
             tr[i].ans=0;
             in[i]=0;
+            match[i]=0;
         }
         tot=0;
     }
@@ -44,13 +47,19 @@ struct Trie{
         int u=0;
         for(int i=start;i<=end;i++){
             if(Line[i]>=53 && Line[i]<=62){
-                if(Line[i-1]==63 && (i==end || Line[i+1]==63)) continue;
+                if(Line[i-1]==63 && (i==end || Line[i+1]==63)){
+                    // printf("fuck\n");
+                    if(xiabiao[0]==-1) xiabiao[0]=Line[i]-53;
+                    else xiabiao[1]=Line[i]-53;
+                    continue;
+                }
             }
             if(!tr[u].to[Line[i]]){
                 tr[u].to[Line[i]]=++tot;
                 flag=1;
             }
             u=tr[u].to[Line[i]];
+            last_position=u;
         }
         return flag;
     }
@@ -208,16 +217,24 @@ void Compress(int k){
     // }
     // printf("-------------\n");
 }
-void Read_data(){
+struct JSON{
+    struct data{
+        int key,dimension[2];
+        long long value;
+    };
+    vector<data> vec;
+}json[N];
+void Read_data(int json_id){
+    json[json_id].vec.clear();
     int len=Line.length();
-    int start=-1;
     for(int i=0;i<len;i++){
         if(Line[i]=='\"') [[unlikely]] {
             ++i;
             int start=i;
+            xiabiao[0]=-1;xiabiao[1]=-1;
             for(;i<len;i++){
                 if(Line[i]=='\"') break;
-                // Line[i]=get_id(Line[i]);
+                Line[i]=get_id(Line[i]);
             }
             if(T.insert(start,i-1)){
                 string tmp;
@@ -228,19 +245,31 @@ void Read_data(){
                     tmp.push_back(Line[j]);
                 }
                 string_list.push_back(tmp);
+                if(xiabiao[1]!=-1) Is_array[string_list.size()-1]=2;
+                else if(xiabiao[0]!=-1) Is_array[string_list.size()-1]=1;
+                else Is_array[string_list.size()-1]=0;
+                T.match[T.last_position]=string_list.size()-1;
             }
+            int keyid=T.match[T.last_position];
+            JSON::data tmp;
+            tmp.key=keyid;
+            // printf("%d %d %d\n",xiabiao[0],xiabiao[1],Is_array[keyid]);
+            tmp.dimension[0]=xiabiao[0];
+            tmp.dimension[1]=xiabiao[1];
+            json[json_id].vec.push_back(tmp);
+            if((xiabiao[0]==0 || xiabiao[0]==-1) && (xiabiao[1]==0 || xiabiao[1]==-1)) Count_times[keyid]++;
         }
         else if(Line[i]==':') [[unlikely]] {
             long long tmp_val=0;
             bool flag=1;
             i+=2;
             for(;i<len;i++){
-                if(Line[i]==',') break;
+                if(Line[i]==',' || Line[i]=='}') break;
                 if(Line[i]=='-') flag=0;
                 else tmp_val=tmp_val*10+(Line[i]^48);
             }
             tmp_val*=(flag)?1:-1;
-            val.push_back(tmp_val);
+            json[json_id].vec.back().value=tmp_val;
         }
     }
 }
@@ -249,19 +278,35 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
-    ifstream file("dataset0014.txt");
+    ifstream file("dataset.txt");
 
     while(1){
         int file_num=0;
-        string_list.clear();compress_string.clear();val.clear();
+        for(int i=0;i<string_list.size();i++){
+            Is_array[i]=0;
+            Count_times[i]=0;
+        }
+        string_list.clear();compress_string.clear();
         T.clear();
         while (getline(file, Line) && file_num<5000) {
-            Read_data();
+            Read_data(file_num);
             file_num++;
+            // for(auto x:json[file_num-1].vec){
+            //     printf("%d %d %d %lld\n",x.key,x.dimension[0],x.dimension[1],x.value);
+            // }
         }
-        // for(int i=1;i<=8;i++){
-        //     Compress(i);
-        // }    
+        // for(int i=0;i<string_list.size();i++){
+        //     for(auto x:string_list[i]) printf("%c",get_char(x));
+        //     printf(" %d %d\n",Is_array[i],Count_times[i]);
+        // }
+        for(int i=1;i<=45;i++){
+            Compress(i);
+        }
+        // printf("-------------\n");
+        // for(int i=0;i<string_list.size();i++){
+        //     for(auto x:string_list[i]) printf("%c",get_char(x));
+        //     printf(" %d %d\n",Is_array[i],Count_times[i]);
+        // }
         if(file_num!=5000) break;
     }
     
