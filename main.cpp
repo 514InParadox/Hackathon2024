@@ -9,6 +9,8 @@ const int N=1e5+5;
 #define pb push_back
 int Is_array[N];//0:not array,1:1-dimension array,2:2-dimension array
 int Count_times[N];
+long long Max_value[N],Min_value[N];
+const long long MAX_VALUE=1e18,MIN_VALUE=-1e18;
 int xiabiao[2];
 vector<string> string_list,compress_string;
 string Line;
@@ -28,14 +30,13 @@ char get_char(int id){
 }
 struct Trie{
     struct node{
-        int fail,to[129],ans;
+        int fail,to[129];
     }tr[N];
     int tot,in[N],last_position,match[N];
     void clear(){
         for(int i=0;i<=tot;i++){
             memset(tr[i].to,0,sizeof(tr[i].to));
             tr[i].fail=0;
-            tr[i].ans=0;
             in[i]=0;
             match[i]=0;
         }
@@ -249,6 +250,8 @@ void Read_data(int json_id){
                 else if(xiabiao[0]!=-1) Is_array[string_list.size()-1]=1;
                 else Is_array[string_list.size()-1]=0;
                 T.match[T.last_position]=string_list.size()-1;
+                Max_value[string_list.size()-1]=MIN_VALUE;
+                Min_value[string_list.size()-1]=MAX_VALUE;
             }
             int keyid=T.match[T.last_position];
             JSON::data tmp;
@@ -270,6 +273,9 @@ void Read_data(int json_id){
             }
             tmp_val*=(flag)?1:-1;
             json[json_id].vec.back().value=tmp_val;
+            // printf("! %lld %lld %lld\n",Max_value[json[json_id].vec.back().key],Min_value[json[json_id].vec.back().key],tmp_val);
+            Max_value[json[json_id].vec.back().key]=max(Max_value[json[json_id].vec.back().key],tmp_val);
+            Min_value[json[json_id].vec.back().key]=min(Min_value[json[json_id].vec.back().key],tmp_val);
         }
     }
 }
@@ -278,7 +284,7 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
-    ifstream file("dataset.txt");
+    ifstream file("dataset0012.txt");
 
     while(1){
         int file_num=0;
@@ -305,7 +311,7 @@ int main(){
         // printf("-------------\n");
         // for(int i=0;i<string_list.size();i++){
         //     for(auto x:string_list[i]) printf("%c",get_char(x));
-        //     printf(" %d %d\n",Is_array[i],Count_times[i]);
+        //     printf(" %d %d %lld %lld\n",Is_array[i],Count_times[i],Max_value[i],Min_value[i]);
         // }
         if(file_num!=5000) break;
     }
