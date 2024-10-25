@@ -310,7 +310,7 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
                 if( vect[j].dimension[1] == 0 ) { // 二维数组
                     for(int k = j; k <= p; ++k) {
                         int l = k;
-                        while( l < vect.size() - 1 && vect[l+1].dimension[0] == vect[l].dimension[0] ) 
+                        while( l < vect.size() - 1 && vect[l+1].dimension[0] == vect[l].dimension[0] && vect[l+1].key == vect[l].key ) 
                             ++l;
                         outFile.append(3, vect[l].dimension[1]);
                         for(int o = k; o <= l; ++o) {
