@@ -38,11 +38,13 @@ public:
     }
 };
 
-int main() {
-    Bitstream test;
-    test.append(8, 'a');
-    test.append(8, 'b');
-    test.flushInto("./test");
-}
+extern Bitstream outFile;
+
+// int main() {
+//     Bitstream test;
+//     test.append(8, 'a');
+//     test.append(8, 'b');
+//     test.flushInto("./test");
+// }
 
 #endif
