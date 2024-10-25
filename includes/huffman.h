@@ -26,7 +26,7 @@ private: // 直接存储编码后的字符串
     long long maxVal, minVal;
     bool typed; // 是否有符号
     bool inHuffman; // 是否在 value 哈夫曼树 TODO：如何判断是否应该加入哈夫曼树？
-    int dim; // 数组维数，0 表示非数组 TODO：查看下划线最后是否有数字、判断是否是数组
+    // int dim; // 数组维数，0 表示非数组 TODO：查看下划线最后是否有数字、判断是否是数组
 public:
     JSON_Key(): maxVal(1ll<<63), minVal((1ull<<63)-1), typed(false), inHuffman(false) {
         a.clear();
@@ -35,7 +35,6 @@ public:
        for(auto ch: a) outFile.append(7, ch);
        outFile.append(7, 0); // 分隔符
        outFile.append(6, max(maxVal >= 0 ? ceilLog2(maxVal) : 0, minVal <= 0 ? ceilLog2(minVal) : 0) - 1); // 字符长度 - 1
-       outFile.append(2, dim); // 维度
        outFile.append(1, minVal < 0); // 是否有符号
        outFile.append(1, inHuffman); // 是否放入哈夫曼树
     }
