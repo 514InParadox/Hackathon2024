@@ -4,11 +4,25 @@
 #include<queue>
 #include<algorithm>
 #include<fstream>
+#include <unordered_map>
+#include "utils.h"
+#include "huffman.h"
 using namespace std;
+using LL = long long;
+template<typename T>
+void upd_max(T &a,T b) { if (a < b) a = b; }
+template<typename T>
+void upd_min(T &a,T b) { if (a > b) a = b; }
 const int N=1e5+5;
 #define pb push_back
 int Is_array[N];//0:not array,1:1-dimension array,2:2-dimension array
 int Count_times[N];
+long long Max_value[N],Min_value[N];
+std::unordered_map<LL, int> set[1000];
+int width[N];
+bool sgn[N];
+bool huff[N];
+const long long MAX_VALUE=1e18,MIN_VALUE=-1e18;
 int xiabiao[2];
 vector<string> string_list,compress_string;
 string Line;
@@ -28,14 +42,13 @@ char get_char(int id){
 }
 struct Trie{
     struct node{
-        int fail,to[129],ans;
+        int fail,to[129];
     }tr[N];
     int tot,in[N],last_position,match[N];
     void clear(){
         for(int i=0;i<=tot;i++){
             memset(tr[i].to,0,sizeof(tr[i].to));
             tr[i].fail=0;
-            tr[i].ans=0;
             in[i]=0;
             match[i]=0;
         }
@@ -217,18 +230,13 @@ void Compress(int k){
     // }
     // printf("-------------\n");
 }
-struct JSON{
-    struct data{
-        int key,dimension[2];
-        long long value;
-    };
-    vector<data> vec;
-}json[N];
+
+JSON_my json[N];
 void Read_data(int json_id){
     json[json_id].vec.clear();
     int len=Line.length();
     for(int i=0;i<len;i++){
-        if(Line[i]=='\"') [[unlikely]] {
+        if(Line[i]=='\"'){
             ++i;
             int start=i;
             xiabiao[0]=-1;xiabiao[1]=-1;
@@ -249,9 +257,11 @@ void Read_data(int json_id){
                 else if(xiabiao[0]!=-1) Is_array[string_list.size()-1]=1;
                 else Is_array[string_list.size()-1]=0;
                 T.match[T.last_position]=string_list.size()-1;
+                Max_value[string_list.size()-1]=MIN_VALUE;
+                Min_value[string_list.size()-1]=MAX_VALUE;
             }
             int keyid=T.match[T.last_position];
-            JSON::data tmp;
+            JSON_my::data tmp;
             tmp.key=keyid;
             // printf("%d %d %d\n",xiabiao[0],xiabiao[1],Is_array[keyid]);
             tmp.dimension[0]=xiabiao[0];
@@ -259,7 +269,7 @@ void Read_data(int json_id){
             json[json_id].vec.push_back(tmp);
             if((xiabiao[0]==0 || xiabiao[0]==-1) && (xiabiao[1]==0 || xiabiao[1]==-1)) Count_times[keyid]++;
         }
-        else if(Line[i]==':') [[unlikely]] {
+        else if(Line[i]==':'){
             long long tmp_val=0;
             bool flag=1;
             i+=2;
@@ -270,9 +280,15 @@ void Read_data(int json_id){
             }
             tmp_val*=(flag)?1:-1;
             json[json_id].vec.back().value=tmp_val;
+            // printf("! %lld %lld %lld\n",Max_value[json[json_id].vec.back().key],Min_value[json[json_id].vec.back().key],tmp_val);
+            int key_id = json[json_id].vec.back().key;
+            upd_max(Max_value[key_id], tmp_val);
+            upd_min(Min_value[key_id], tmp_val);
+            ++set[key_id][tmp_val];
         }
     }
 }
+#define EPOCH 2000
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -280,6 +296,15 @@ int main(){
     clock_t start=clock();
     ifstream file("dataset.txt");
 
+    constexpr int bound[] = {8, 16, 32, 64};
+    const int *bound_p = bound;
+    int u_b[64];
+    for (int i = 0; i < 64; ++i)
+    {
+        if (i == *bound_p)
+            ++bound_p;
+        u_b[i] = *bound_p;
+    }
     while(1){
         int file_num=0;
         for(int i=0;i<string_list.size();i++){
@@ -288,26 +313,57 @@ int main(){
         }
         string_list.clear();compress_string.clear();
         T.clear();
-        while (getline(file, Line) && file_num<5000) {
+        while (getline(file, Line) && file_num<EPOCH) {
             Read_data(file_num);
             file_num++;
             // for(auto x:json[file_num-1].vec){
             //     printf("%d %d %d %lld\n",x.key,x.dimension[0],x.dimension[1],x.value);
             // }
         }
+        
         // for(int i=0;i<string_list.size();i++){
         //     for(auto x:string_list[i]) printf("%c",get_char(x));
         //     printf(" %d %d\n",Is_array[i],Count_times[i]);
         // }
-        for(int i=1;i<=45;i++){
+        for(int i=1;i<=1;i++){
             Compress(i);
         }
-        // printf("-------------\n");
-        // for(int i=0;i<string_list.size();i++){
-        //     for(auto x:string_list[i]) printf("%c",get_char(x));
-        //     printf(" %d %d\n",Is_array[i],Count_times[i]);
-        // }
-        if(file_num!=5000) break;
+        auto bit_width = [](LL x) {
+            int w = 0;
+            while (1ll << w <= x >> 1)
+                ++w;
+            return w + 1;
+        };
+        for (int i = 0; i < string_list.size(); ++i)
+        {
+            if (Max_value[i] < 0)
+                width[i] = bit_width(-(Min_value[i] + 1));
+            else if (Min_value[i] < 0)
+                width[i] = std::max(bit_width(-(Min_value[i] + 1)),bit_width(Max_value[i]));
+            else
+                width[i] = bit_width(Max_value[i]);
+            sgn[i] = Min_value[i] < 0;
+            int size = set[i].size();
+            huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
+        }
+        puts("A");
+        compressOutputSpecialChar(compress_string);
+        puts("B");
+        compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff);
+        puts("C");
+        compressOutputValueHuffman(set, string_list.size());
+        puts("D");
+        compressOutputJSON(json, file_num);
+        puts("E");
+        printf("-------------\n");
+        outFile.flushInto("data");
+        for(int i=0;i<string_list.size();i++){
+            set[i].clear();
+            // for(auto x:string_list[i]) printf("%c",get_char(x));
+            // printf(" %d %d %lld %lld\n",Is_array[i],Count_times[i],Max_value[i],Min_value[i]);
+        }
+
+        if(file_num!=EPOCH) break;
     }
     
     printf("接受\n");

@@ -8,6 +8,8 @@
 #include <fstream>
 #include <string>
 #include <string.h>
+#include <bitset>
+#include <vector>
 
 class Bitstream {
 private:
@@ -18,11 +20,14 @@ private:
 	bool *p;
 public:
     Bitstream(): len(0) {
-        memset(buf, 0, sizeof(buf));
     }
     void append( int l, size_t num ) { // 一次不会增加 64 位以上，增加的数直接用 size_t 存储
         for(int i = 0; i < l; ++i) 
             buf[len + i] = (num >> i) & 1;
+        len += l;
+    }
+    void append( int l, std::bitset<128> num ) { // 重载哈夫曼编码 append
+        for(int i = 0; i < l; ++i) buf[len + i] = num[i];
         len += l;
     }
     void flushInto(const std::string &path) {
@@ -40,6 +45,7 @@ public:
         }
 
         outfile.close();
+        len = 0;
     }
 
 	void syncFrom(const std::string &path) {
@@ -59,18 +65,29 @@ public:
 			res |= *p++ << i;
 		return res;
 	}
+    void outputLen() {
+        printf("outFile len: %d\n", len);
+    }
 };
 
 extern Bitstream outFile;
 
-char enc_to_ch(std::int8_t e)
-{
-	return e <= 26 ? 64 | e : e <= 52 ? 96 | e - 26 : e <= 62 ? 48 | e - 53 : '_';
-}
-std::int8_t ch_to_enc(char c)
-{
-	return std::isupper(c) ? c & 31 : std::islower(c) ? 26 + (c & 31) : std::isdigit(c) ? 53 + (c & 15) : 63;
-}
+char enc_to_ch(std::int8_t e);
+std::int8_t ch_to_enc(char c);
+
+struct JSON_my{
+    struct data{
+        int key,dimension[2];
+        long long value;
+        bool operator <(const data &other) {
+            return this->key < other.key ||
+            this->key == other.key && this->dimension[0] < other.dimension[0] ||
+            this->key == other.key && this->dimension[0] == other.dimension[0] && this->dimension[1] < other.dimension[1];
+
+        }
+    };
+    std::vector<data> vec;
+};
 
 // int main() {
 //     Bitstream test;
