@@ -53,10 +53,10 @@ public:
 				buf[len++] = buf_[i] >> j & 1;
 		p = buf;
 	}
-	std::size_t extract(int w) {
-		std::size_t res = 0;
+	std::uint64_t extract(int w) {
+		std::uint64_t res = 0;
 		for (int i = 0; i < w; ++i)
-			res |= *p++ << i;
+			res |= static_cast<std::uint64_t>(*p++) << i;
 		return res;
 	}
 };
