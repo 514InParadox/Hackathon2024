@@ -13,11 +13,20 @@ template<typename T>
 void upd_max(T &a,T b) { if (a < b) a = b; }
 template<typename T>
 void upd_min(T &a,T b) { if (a > b) a = b; }
+using LL = long long;
+template<typename T>
+void upd_max(T &a,T b) { if (a < b) a = b; }
+template<typename T>
+void upd_min(T &a,T b) { if (a > b) a = b; }
 const int N=1e5+5;
 #define pb push_back
 int Is_array[N];//0:not array,1:1-dimension array,2:2-dimension array
 int Count_times[N];
 long long Max_value[N],Min_value[N];
+std::unordered_map<LL, int> set[1000];
+int width[N];
+bool sgn[N];
+bool huff[N];
 std::unordered_map<LL, int> set[1000];
 int width[N];
 bool sgn[N];
@@ -288,6 +297,10 @@ void Read_data(int json_id){
             upd_max(Max_value[key_id], tmp_val);
             upd_min(Min_value[key_id], tmp_val);
             ++set[key_id][tmp_val];
+            int key_id = json[json_id].vec.back().key;
+            upd_max(Max_value[key_id], tmp_val);
+            upd_min(Min_value[key_id], tmp_val);
+            ++set[key_id][tmp_val];
         }
     }
 }
@@ -297,8 +310,17 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
-    ifstream file("dataset0012.txt");
+    ifstream file("dataset.txt");
 
+    constexpr int bound[] = {8, 16, 32, 64};
+    const int *bound_p = bound;
+    int u_b[64];
+    for (int i = 0; i < 64; ++i)
+    {
+        if (i == *bound_p)
+            ++bound_p;
+        u_b[i] = *bound_p;
+    }
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
     int u_b[64];
@@ -324,10 +346,12 @@ int main(){
             // }
         }
         
+        
         // for(int i=0;i<string_list.size();i++){
         //     for(auto x:string_list[i]) printf("%c",get_char(x));
         //     printf(" %d %d\n",Is_array[i],Count_times[i]);
         // }
+        for(int i=1;i<=1;i++){
         for(int i=1;i<=1;i++){
             Compress(i);
         }
