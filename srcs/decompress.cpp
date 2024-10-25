@@ -154,7 +154,7 @@ int main(int argc, const char **argv)
 					parse_value = [&]() {
 						return bs.extract(k.n);
 					};
-				auto dim = std::make_unique_for_overwrite<int[]>(dim_cnt);
+				auto dim = std::make_unique<int[]>(dim_cnt);
 				std::function<void (int)> DFS = [&](int i) {
 					if (i == dim_cnt)
 					{
