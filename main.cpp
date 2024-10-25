@@ -274,10 +274,12 @@ void Read_data(int json_id){
         else if(Line[i]==':'){
             long long tmp_val=0;
             bool flag=1;
-            i+=2;
+            while(!(Line[i]>='0' && Line[i]<='9')) {
+                if( Line[i] == '-' ) flag = 0;
+                i++;
+            }
             for(;i<len;i++){
                 if(Line[i]==',' || Line[i]=='}') break;
-                if(Line[i]=='-') flag=0;
                 else tmp_val=tmp_val*10+(Line[i]^48);
             }
             tmp_val*=(flag)?1:-1;
@@ -296,7 +298,7 @@ int main(){
     cin.tie(nullptr);
     cout.tie(nullptr);
     clock_t start=clock();
-    ifstream file("dataset.txt");
+    ifstream file("smallData.txt");
 
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
@@ -346,6 +348,7 @@ int main(){
                 width[i] = std::max(bit_width(-(Min_value[i] + 1)), bit_width(Max_value[i])) + 1;
             else
                 width[i] = bit_width(Max_value[i]);
+            // printf("%d\n", Min_value[i]);
             sgn[i] = Min_value[i] < 0;
             int size = set[i].size();
             // huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
