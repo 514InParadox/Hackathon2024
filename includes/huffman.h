@@ -261,11 +261,11 @@ void compressOutputSpecialChar(const std::vector<std::string> &compress_string) 
     outFile.append(7, 0);
 }
 
-void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const int Is_array[], const int Count_times[], const int length[], const bool ifSign[], const bool inHuffman[] ) {
+void compressOutputKeyHuffman(const std::vector<std::string> &string_list, const int Is_array[], const int Count_times[], const int length[], const bool ifSign[], const bool inHuffman[] , const int file_num ) {
     for(int i = 0; i < string_list.size(); ++i) {
         keyHuff.insert(JSON_Key(string_list[i], length[i], ifSign[i], inHuffman[i]), Count_times[i]);
     }
-    keyHuff.insert(JSON_Key("", 0, 0, 0), 1); // 插入结束字符
+    keyHuff.insert(JSON_Key("", 0, 0, 0), file_num); // 插入结束字符
 
     keyHuff.createHuffmanTree();
     keyHuff.outputHuffman();
@@ -287,6 +287,8 @@ void compressOutputValueHuffman(const std::unordered_map<long long, int> set[], 
 }
 
 void compressOutputJSON(struct JSON_my json[], int file_num) {
+    int divLength = keyHuff.getEncodeTableLength(JSON_Key("", 0, 0, 0));
+    std::bitset<128> divStream = keyHuff.getEncodeTable(JSON_Key("", 0, 0, 0));
     for(int i = 0; i < file_num; i++) {
         // outFile.outputLen();
         auto vect = json[i].vec;
@@ -336,9 +338,9 @@ void compressOutputJSON(struct JSON_my json[], int file_num) {
                 }
             }
         }
-        outFile.append(7, 0); // 分隔符
+        outFile.append(divLength, divStream);
     }
-    outFile.append(7, 0); // 文件结束
+    outFile.append(divLength, divStream); // 文件结束
 }
 
 #endif

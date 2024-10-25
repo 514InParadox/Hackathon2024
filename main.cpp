@@ -356,7 +356,7 @@ int main(){
         // puts("A");
         compressOutputSpecialChar(compress_string);
         // puts("B");
-        compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff);
+        compressOutputKeyHuffman(string_list, Is_array, Count_times, width, sgn, huff, file_num);
         // puts("C");
         compressOutputValueHuffman(set, string_list.size(), huff);
         // puts("D");
