@@ -1,4 +1,4 @@
 cmake -B build
 cmake --build build
 
-.\build\Debug\main.exe
+.\build\main.exe

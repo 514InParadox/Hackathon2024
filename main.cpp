@@ -292,7 +292,7 @@ void Read_data(int json_id){
         }
     }
 }
-#define EPOCH 100
+#define EPOCH 1000
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -300,6 +300,8 @@ int main(){
     clock_t start=clock();
     // ifstream file("smallData.txt");
     ifstream file("dataset.txt");
+
+    int flush_file_count = 0;
 
     constexpr int bound[] = {8, 16, 32, 64};
     const int *bound_p = bound;
@@ -332,7 +334,7 @@ int main(){
         //     for(auto x:string_list[i]) printf("%c",get_char(x));
         //     printf(" %d %d\n",Is_array[i],Count_times[i]);
         // }
-        for(int i=1;i<=1;i++){
+        for(int i=1;i<=43;i++){
             Compress(i);
         }
         auto bit_width = [](LL x) {
@@ -352,8 +354,8 @@ int main(){
             // printf("%d\n", Min_value[i]);
             sgn[i] = Min_value[i] < 0;
             int size = set[i].size();
-            // huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
-            huff[i] = false;
+            huff[i] = 2 * size - 1 + size * (2 + u_b[width[i]]) < string_list.size() * (width[i] - bit_width(size - 1));
+            // huff[i] = false;
         }
         keyHuff.reset();
         valueHuff.reset();
@@ -369,18 +371,18 @@ int main(){
         // puts("E");
         // printf("-------------\n");
         // outFile.flushInto("dataTruth.txt");
-        outFile.flushInto("dataset.txt_0");
+        outFile.flushInto("dataset.txt_" + std::to_string(flush_file_count++));
         for(int i=0;i<string_list.size();i++){
             set[i].clear();
             // for(auto x:string_list[i]) printf("%c",get_char(x));
             // printf(" %d %d %lld %lld\n",Is_array[i],Count_times[i],Max_value[i],Min_value[i]);
         }
-        break;
+        // break;
         if(file_num!=EPOCH) break;
     }
     
-    printf("接受\n");
-    printf("压缩效益：%d\n",compress_value);
+    printf("ac\n");
+    printf("pro:%d\n",compress_value);
     printf("Time: %lf\n",(double)(clock()-start)/CLOCKS_PER_SEC);
     return 0;
 }
